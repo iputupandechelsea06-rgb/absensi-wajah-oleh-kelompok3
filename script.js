@@ -16,9 +16,9 @@ const registerBtn = document.getElementById("registerBtn");
 console.log("🔄 Loading Face API models...");
 
 Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-  faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-  faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+  faceapi.nets.tinyFaceDetector.loadFromUri('/'),
+  faceapi.nets.faceLandmark68Net.loadFromUri('/'),
+  faceapi.nets.faceRecognitionNet.loadFromUri('/')
 ]).then(() => {
   console.log("✅ All Face API models loaded successfully");
   startVideo();
@@ -769,3 +769,4 @@ async function initFaceDetection() {
 }
 
 console.log('✅ Face detection wrapper functions loaded');
+

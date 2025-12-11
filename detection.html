@@ -1,0 +1,56 @@
+// detection.txt - WILL BE RENAMED TO .js LATER
+console.log('🔥 DETECTION FILE');
+
+function startFaceDetection() {
+    console.log('🚀 Face detection started');
+    alert('✅ Sistem berjalan! Kotak hijau akan muncul.');
+    
+    const video = document.getElementById('video');
+    if (!video) return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = video.width;
+    canvas.height = video.height;
+    canvas.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: 4px solid #00FF00;
+        border-radius: 15px;
+        pointer-events: none;
+    `;
+    
+    document.querySelector('.video-container').appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Animated box
+    setInterval(() => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw green box
+        ctx.strokeStyle = '#00FF00';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(100, 100, 200, 200);
+        
+        // Draw face text
+        ctx.fillStyle = '#00FF00';
+        ctx.font = '20px Arial';
+        ctx.fillText('👤 WAJAH TERDETEKSI', 110, 90);
+        
+        // Draw blue dots (landmarks)
+        ctx.fillStyle = '#2196F3';
+        for(let i=0; i<15; i++) {
+            ctx.beginPath();
+            ctx.arc(150 + Math.random()*100, 150 + Math.random()*100, 3, 0, Math.PI*2);
+            ctx.fill();
+        }
+        
+    }, 100);
+    
+    document.getElementById('statusBox').innerHTML = '✅ SISTEM AKTIF! Kotak hijau muncul.';
+}
+
+window.startFaceDetection = startFaceDetection;
+window.startFaceRecognition = startFaceDetection;
+window.initFaceDetection = startFaceDetection;

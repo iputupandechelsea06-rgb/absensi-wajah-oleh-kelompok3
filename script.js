@@ -696,4 +696,76 @@ FEATURES:
 5. Database Integration
 6. Demo Mode for Presentation
 ============================================
+
 `);
+// ============================================
+// 🔧 FIX UNTUK SCAN.HTML - WRAPPER FUNCTION
+// ============================================
+
+// Fungsi yang dicari oleh scan.html
+async function startFaceRecognition() {
+    console.log('🚀 startFaceRecognition() called from scan.html');
+    
+    try {
+        // 1. Load model face-api.js
+        console.log('📦 Loading face-api models...');
+        
+        // Coba load dari ROOT (karena model di root)
+        await faceapi.nets.ssdMobilenetv1.loadFromUri('/');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('/');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('/');
+        
+        console.log('✅ Models loaded successfully');
+        
+        // 2. Start detection loop
+        const video = document.getElementById('video');
+        const canvas = faceapi.createCanvasFromMedia(video);
+        document.querySelector('.video-container').append(canvas);
+        
+        const displaySize = { width: video.width, height: video.height };
+        faceapi.matchDimensions(canvas, displaySize);
+        
+        console.log('🎯 Starting face detection loop...');
+        
+        // 3. Detection loop
+        setInterval(async () => {
+            const detections = await faceapi.detectAllFaces(video)
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+            
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+            
+            // Clear canvas
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw detections
+            faceapi.draw.drawDetections(canvas, resizedDetections);
+            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            
+            // Update status
+            if (detections.length > 0) {
+                document.getElementById('statusBox').innerHTML = 
+                    `✅ ${detections.length} wajah terdeteksi`;
+            }
+            
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Face detection error:', error);
+        document.getElementById('statusBox').innerHTML = 
+            '❌ Error face detection: ' + error.message;
+    }
+}
+
+// Alternatif function names (biar scan.html bisa panggil)
+async function startFaceDetection() {
+    console.log('🔍 startFaceDetection() called');
+    return startFaceRecognition();
+}
+
+async function initFaceDetection() {
+    console.log('🔧 initFaceDetection() called');
+    return startFaceRecognition();
+}
+
+console.log('✅ Face detection wrapper functions loaded');

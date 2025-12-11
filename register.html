@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Wajah Baru - Absensi Face Recognition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@latest/dist/face-api.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4A00E0 0%, #8E2DE2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .video-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            background: #000;
+            transform: scaleX(-1);
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: #4A00E0;
+            outline: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            width: 100%;
+            font-size: 18px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status-loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            display: block;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+
+        .instructions h3 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-btn">← Kembali</a>
+            <h1>👤 Register Wajah Baru</h1>
+            <p>Daftarkan wajah untuk sistem absensi face recognition</p>
+        </header>
+
+        <div class="content">
+            <div class="video-section">
+                <video id="video" width="500" height="375" autoplay muted></video>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap</label>
+                    <input type="text" id="nama" placeholder="Contoh: I Putu Pande Chelsea Ananda Putra" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nim">NIM</label>
+                    <input type="text" id="nim" placeholder="Contoh: 40040624650082" required>
+                </div>
+
+                <button id="registerBtn" class="btn btn-primary">
+                    <span id="btnText">📷 Ambil Wajah & Register</span>
+                </button>
+
+                <div id="status" class="status-box"></div>
+            </div>
+
+            <div class="instructions">
+                <h3>📋 Petunjuk Register Wajah:</h3>
+                <ol>
+                    <li>Pastikan wajah terlihat jelas di kamera</li>
+                    <li>Isi nama lengkap dan NIM dengan benar</li>
+                    <li>Klik tombol "Ambil Wajah & Register"</li>
+                    <li>Tunggu proses selesai (sekitar 3-5 detik)</li>
+                    <li>Setelah berhasil, wajah akan dikenali sistem</li>
+                </ol>
+            </div>
+        </div>
+
+        <footer>
+            <p>Sistem Absensi Face Recognition &copy; 2024</p>
+        </footer>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const namaInput = document.getElementById('nama');
+        const nimInput = document.getElementById('nim');
+        const registerBtn = document.getElementById('registerBtn');
+        const btnText = document.getElementById('btnText');
+        const statusDiv = document.getElementById('status');
+        
+        let isProcessing = false;
+        let modelsLoaded = false;
+
+        // Start camera
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 500 },
+                        height: { ideal: 375 },
+                        facingMode: "user"
+                    } 
+                });
+                video.srcObject = stream;
+                console.log("✅ Kamera siap");
+            } catch (err) {
+                showError("❌ Gagal mengakses kamera: " + err.message);
+            }
+        }
+
+        // Load Face API models
+        async function loadModels() {
+            showStatus("⏳ Memuat model AI...", "loading");
+            
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+                    faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+                    faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+                ]);
+                
+                modelsLoaded = true;
+                showStatus("✅ Model AI siap!", "success");
+                console.log("✅ Face API models loaded");
+                
+            } catch (error) {
+                showError("❌ Gagal memuat model AI. Pastikan folder /models ada!");
+                console.error("Model load error:", error);
+            }
+        }
+
+        // Register face
+        async function registerFace() {
+            if (isProcessing) return;
+            
+            const nama = namaInput.value.trim();
+            const nim = nimInput.value.trim();
+            
+            // Validasi input
+            if (!nama) {
+                showError("❌ Masukkan nama lengkap");
+                namaInput.focus();
+                return;
+            }
+            
+            if (!nim) {
+                showError("❌ Masukkan NIM");
+                nimInput.focus();
+                return;
+            }
+            
+            if (!modelsLoaded) {
+                showError("❌ Model AI belum siap. Tunggu beberapa detik...");
+                return;
+            }
+            
+            isProcessing = true;
+            btnText.textContent = "⏳ Memproses...";
+            registerBtn.disabled = true;
+            
+            showStatus("⏳ Mendeteksi wajah...", "loading");
+            
+            try {
+                // Deteksi wajah
+                const detection = await faceapi
+                    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+                
+                if (!detection) {
+                    showError("❌ Wajah tidak terdeteksi. Pastikan wajah terlihat jelas!");
+                    resetButton();
+                    return;
+                }
+                
+                showStatus("✅ Wajah terdeteksi! Mengirim data...", "loading");
+                
+                // Convert descriptor ke array
+                const descriptorArray = Array.from(detection.descriptor);
+                
+                // Kirim ke server
+                const response = await fetch("/api/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        nama: nama,
+                        nim: nim,
+                        descriptor: descriptorArray
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus(`✅ ${result.message}`, "success");
+                    
+                    // Reset form setelah 3 detik
+                    setTimeout(() => {
+                        namaInput.value = "";
+                        nimInput.value = "";
+                        showStatus("", "");
+                    }, 3000);
+                    
+                } else {
+                    showError(`❌ ${result.message}`);
+                }
+                
+            } catch (error) {
+                console.error("Register error:", error);
+                showError("❌ Terjadi kesalahan: " + error.message);
+            } finally {
+                resetButton();
+            }
+        }
+
+        // Helper functions
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = "status-box";
+            
+            if (type === "success") {
+                statusDiv.classList.add("status-success");
+            } else if (type === "error") {
+                statusDiv.classList.add("status-error");
+            } else if (type === "loading") {
+                statusDiv.classList.add("status-loading");
+            }
+        }
+
+        function showError(message) {
+            showStatus(message, "error");
+        }
+
+        function resetButton() {
+            isProcessing = false;
+            btnText.textContent = "📷 Ambil Wajah & Register";
+            registerBtn.disabled = false;
+        }
+
+        // Event listeners
+        registerBtn.addEventListener('click', registerFace);
+        
+        // Enter key untuk submit
+        nimInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                registerFace();
+            }
+        });
+
+        // Initialize
+        startCamera();
+        loadModels();
+        
+        // Auto focus ke nama input
+        setTimeout(() => namaInput.focus(), 1000);
+    </script>
+</body>
+</html>

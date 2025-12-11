@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Kehadiran - Absensi Face Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(-3px);
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .user-info h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-hadir {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .status-tidak {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 20px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-btn">← Kembali ke Scan</a>
+            <h1>📊 Status Kehadiran</h1>
+            <p>Riwayat absensi mahasiswa</p>
+        </header>
+
+        <div class="user-info">
+            <h2 id="userName">Memuat data...</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">NIM</div>
+                    <div class="info-value" id="userNim">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status Terakhir</div>
+                    <div class="info-value" id="lastStatus">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Hari/Tanggal</div>
+                    <div class="info-value" id="lastDate">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Waktu Absen</div>
+                    <div class="info-value" id="lastTime">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="stats" id="statsContainer">
+                <!-- Stats akan diisi oleh JavaScript -->
+            </div>
+
+            <h3 class="section-title">📋 Riwayat Absensi</h3>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Memuat data absensi...</p>
+            </div>
+            
+            <div id="absensiTable" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Hari</th>
+                            <th>Tanggal</th>
+                            <th>Jam</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="absensiBody">
+                        <!-- Data akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="noData" class="no-data" style="display: none;">
+                <div>📭</div>
+                <p>Belum ada data absensi</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>Sistem Absensi Face Recognition &copy; 2024</p>
+        </footer>
+    </div>
+
+    <script>
+        // Ambil NIM dari URL
+        const pathSegments = window.location.pathname.split('/');
+        const nim = pathSegments[pathSegments.length - 1];
+        
+        // Elements
+        const userName = document.getElementById('userName');
+        const userNim = document.getElementById('userNim');
+        const lastStatus = document.getElementById('lastStatus');
+        const lastDate = document.getElementById('lastDate');
+        const lastTime = document.getElementById('lastTime');
+        const loadingDiv = document.getElementById('loading');
+        const absensiTable = document.getElementById('absensiTable');
+        const absensiBody = document.getElementById('absensiBody');
+        const noDataDiv = document.getElementById('noData');
+        const statsContainer = document.getElementById('statsContainer');
+
+        // Format tanggal Indonesia
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { day: '2-digit', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString('id-ID', options);
+        }
+
+        // Ambil data absensi
+        async function loadAbsensiData() {
+            try {
+                // Tampilkan loading
+                loadingDiv.style.display = 'block';
+                absensiTable.style.display = 'none';
+                noDataDiv.style.display = 'none';
+                
+                // Ambil data dari API
+                const response = await fetch(`/api/user/${nim}/absensi`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const { absensi, userInfo } = result.data;
+                    
+                    // Update user info
+                    userName.textContent = userInfo.nama || "Unknown";
+                    userNim.textContent = userInfo.nim || nim;
+                    
+                    if (absensi.length > 0) {
+                        const latest = absensi[0];
+                        lastStatus.textContent = latest.status;
+                        lastStatus.className = latest.status === 'Hadir' ? 'status-hadir' : 'status-tidak';
+                        lastDate.textContent = `${latest.hari}, ${formatDate(latest.tanggal)}`;
+                        lastTime.textContent = latest.jam;
+                        
+                        // Update stats
+                        updateStats(absensi);
+                        
+                        // Update table
+                        updateAbsensiTable(absensi);
+                        
+                        absensiTable.style.display = 'block';
+                    } else {
+                        // Tidak ada data
+                        userName.textContent = userInfo.nama || "Unknown";
+                        userNim.textContent = userInfo.nim || nim;
+                        lastStatus.textContent = "Tidak ada data";
+                        lastDate.textContent = "-";
+                        lastTime.textContent = "-";
+                        
+                        noDataDiv.style.display = 'block';
+                    }
+                    
+                } else {
+                    showError("Gagal memuat data absensi");
+                }
+                
+            } catch (error) {
+                console.error("Error loading data:", error);
+                showError("Terjadi kesalahan saat memuat data");
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // Update statistics
+        function updateStats(absensi) {
+            const total = absensi.length;
+            const hadirCount = absensi.filter(a => a.status === 'Hadir').length;
+            const tidakCount = total - hadirCount;
+            const percentage = total > 0 ? Math.round((hadirCount / total) * 100) : 0;
+            
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${total}</div>
+                    <div class="stat-label">Total Absensi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${hadirCount}</div>
+                    <div class="stat-label">Hadir</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${tidakCount}</div>
+                    <div class="stat-label">Tidak Hadir</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${percentage}%</div>
+                    <div class="stat-label">Persentase Hadir</div>
+                </div>
+            `;
+        }
+
+        // Update table
+        function updateAbsensiTable(absensi) {
+            absensiBody.innerHTML = '';
+            
+            absensi.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.hari}</td>
+                    <td>${formatDate(item.tanggal)}</td>
+                    <td>${item.jam}</td>
+                    <td class="${item.status === 'Hadir' ? 'status-hadir' : 'status-tidak'}">
+                        ${item.status}
+                    </td>
+                `;
+                absensiBody.appendChild(row);
+            });
+        }
+
+        // Show error
+        function showError(message) {
+            loadingDiv.style.display = 'none';
+            absensiTable.style.display = 'none';
+            noDataDiv.innerHTML = `
+                <div>❌</div>
+                <p>${message}</p>
+            `;
+            noDataDiv.style.display = 'block';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadAbsensiData);
+        
+        // Auto refresh setiap 30 detik
+        setInterval(loadAbsensiData, 30000);
+    </script>
+</body>
+</html>

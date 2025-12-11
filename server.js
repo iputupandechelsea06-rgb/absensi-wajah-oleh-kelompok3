@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const mysql = require("mysql2");
 const cors = require("cors");
 const path = require("path");
 
@@ -12,8 +11,11 @@ app.use(express.json());
 app.use(express.static("public", { index: false }));
 
 // =======================================
-//     🗄️ DATABASE CONNECTION
+//     ⚠️ DATABASE CONNECTION - DISABLE DULU UNTUK DEPLOY
 // =======================================
+// KOMENTAR DULU BAGIAN INI UNTUK TESTING DEPLOY
+/*
+const mysql = require("mysql2");
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
@@ -21,7 +23,6 @@ const db = mysql.createConnection({
     database: "absensi_wajah"
 });
 
-// Test koneksi database
 db.connect((err) => {
     if (err) {
         console.error("❌ Database connection failed:", err);
@@ -31,32 +32,9 @@ db.connect((err) => {
     }
 });
 
-// Fungsi buat table otomatis
 function createTablesIfNotExist() {
-    // Table users
-    const usersTable = `
-        CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            nama VARCHAR(100) NOT NULL,
-            nim VARCHAR(20) NOT NULL UNIQUE,
-            face_descriptor TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    `;
-    
-    // Table absensi
-    const absensiTable = `
-        CREATE TABLE IF NOT EXISTS absensi (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            nama VARCHAR(100),
-            nim VARCHAR(20),
-            hari VARCHAR(10),
-            tanggal DATE,
-            jam TIME,
-            status VARCHAR(20),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    `;
+    const usersTable = `CREATE TABLE IF NOT EXISTS users ( ... )`;
+    const absensiTable = `CREATE TABLE IF NOT EXISTS absensi ( ... )`;
     
     db.query(usersTable, (err) => {
         if (err) console.error("❌ Gagal buat table users:", err);
@@ -68,12 +46,13 @@ function createTablesIfNotExist() {
         else console.log("✅ Table 'absensi' ready");
     });
 }
+*/
 
 // =======================================
-//     🔥 API ROUTES
+//     🔥 API ROUTES - DIMODIFIKASI UNTUK DEPLOY
 // =======================================
 
-// 1. SIMPAN ABSENSI
+// 1. SIMPAN ABSENSI (Dummy untuk testing)
 app.post("/api/absen", (req, res) => {
     console.log("📥 API Absen dipanggil:", req.body.nama);
     
@@ -83,288 +62,188 @@ app.post("/api/absen", (req, res) => {
     const hari = hariList[date.getDay()];
     const tanggal = date.toISOString().split("T")[0];
     const jam = date.toTimeString().split(" ")[0];
-
-    const sql = `INSERT INTO absensi (nama, nim, hari, tanggal, jam, status) VALUES (?, ?, ?, ?, ?, ?)`;
-
-    db.query(sql, [nama, nim, hari, tanggal, jam, status || "Hadir"], (err, result) => {
-        if (err) {
-            console.error("❌ Gagal simpan absensi:", err);
-            return res.status(500).json({ 
-                success: false, 
-                message: "Gagal menyimpan absensi" 
-            });
+    
+    // SIMULASI RESPONSE (tanpa database)
+    console.log(`✅ [SIMULASI] Absensi disimpan: ${nama} (${nim}) - ${hari}, ${tanggal} ${jam}`);
+    
+    res.json({ 
+        success: true, 
+        message: "Absensi disimpan (mode simulasi)",
+        data: { 
+            id: Date.now(), 
+            nama, 
+            nim, 
+            hari, 
+            tanggal, 
+            jam,
+            status: status || "Hadir",
+            note: "Database lokal sedang nonaktif untuk deployment"
         }
-        console.log("✅ Absensi tersimpan:", nama);
-        res.json({ 
-            success: true, 
-            message: "Absensi disimpan",
-            data: { id: result.insertId, nama, nim, hari, tanggal, jam }
-        });
     });
 });
 
-// 2. REGISTER USER BARU + SIMPAN WAJAH
+// 2. REGISTER USER (Dummy untuk testing)
 app.post("/api/register", (req, res) => {
     console.log("📥 API Register dipanggil");
     console.log("Nama:", req.body.nama);
     console.log("NIM:", req.body.nim);
-    console.log("Descriptor length:", req.body.descriptor?.length);
     
     const { nama, nim, descriptor } = req.body;
     
-    // Validasi
-    if (!nama || !nim || !descriptor) {
-        console.log("❌ Validation failed: missing fields");
+    if (!nama || !nim) {
         return res.status(400).json({ 
             success: false, 
-            message: "Nama, NIM, dan descriptor wajib diisi" 
+            message: "Nama dan NIM wajib diisi" 
         });
     }
     
-    // Cek panjang descriptor
-    if (!Array.isArray(descriptor) || descriptor.length < 128) {
-        console.log("❌ Descriptor validation failed. Length:", descriptor.length);
-        return res.status(400).json({ 
-            success: false, 
-            message: `Descriptor length invalid: ${descriptor.length} (min 128)` 
-        });
-    }
+    console.log(`✅ [SIMULASI] User registered: ${nama} (${nim})`);
     
-    const sql = `INSERT INTO users (nama, nim, face_descriptor) VALUES (?, ?, ?)`;
-    
-    db.query(sql, [nama, nim, JSON.stringify(descriptor)], (err, result) => {
-        if (err) {
-            console.error("❌ Gagal register user:", err);
-            
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: `NIM ${nim} sudah terdaftar` 
-                });
-            }
-            
-            return res.status(500).json({ 
-                success: false, 
-                message: "Gagal register user" 
-            });
+    res.json({ 
+        success: true, 
+        message: `${nama} berhasil diregister (mode simulasi)`, 
+        data: { 
+            id: Date.now(), 
+            nama, 
+            nim,
+            note: "Database lokal sedang nonaktif"
         }
-        
-        console.log("✅ User registered:", nama);
-        res.json({ 
-            success: true, 
-            message: `${nama} berhasil diregister`, 
-            data: { 
-                id: result.insertId, 
-                nama, 
-                nim 
-            }
-        });
     });
 });
 
-// 3. GET ALL USERS (hanya info)
+// 3. GET ALL USERS (Dummy data)
 app.get("/api/users", (req, res) => {
-    const sql = `SELECT id, nama, nim FROM users ORDER BY nama`;
+    const dummyUsers = [
+        { id: 1, nama: "Chelsea Islan", nim: "20210001" },
+        { id: 2, nama: "Iqbaal Ramadhan", nim: "20210002" },
+        { id: 3, nama: "Prilly Latuconsina", nim: "20210003" },
+        { id: 4, nama: "Raffi Ahmad", nim: "20210004" },
+        { id: 5, nama: "Nagita Slavina", nim: "20210005" }
+    ];
     
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error("❌ Gagal ambil users:", err);
-            return res.status(500).json({ 
-                success: false, 
-                message: "Gagal ambil data user" 
-            });
-        }
-        res.json({ 
-            success: true, 
-            data: results 
-        });
+    res.json({ 
+        success: true, 
+        data: dummyUsers,
+        note: "Data dummy untuk testing deployment"
     });
 });
 
-// 4. GET ALL USERS WITH DESCRIPTORS (untuk face matching)
+// 4. GET ALL USERS WITH DESCRIPTORS (dummy)
 app.get("/api/users/descriptors", (req, res) => {
-    const sql = `SELECT id, nama, nim, face_descriptor FROM users`;
-    
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error("❌ Gagal ambil descriptors:", err);
-            return res.status(500).json({ 
-                success: false, 
-                message: "Gagal ambil descriptor user" 
-            });
+    const dummyDescriptors = [
+        { 
+            id: 1, 
+            nama: "Test User 1", 
+            nim: "TEST001",
+            descriptor: Array(128).fill(0.5)
         }
-        
-        const users = results.map(user => ({
-            id: user.id,
-            nama: user.nama,
-            nim: user.nim,
-            descriptor: JSON.parse(user.face_descriptor)
-        }));
-        
-        res.json({ 
-            success: true, 
-            data: users,
-            count: users.length
-        });
+    ];
+    
+    res.json({ 
+        success: true, 
+        data: dummyDescriptors,
+        count: 1,
+        note: "Mode simulasi - database nonaktif"
     });
 });
 
-// 5. GET USER ABSENSI HISTORY
+// 5. GET USER ABSENSI HISTORY (dummy)
 app.get("/api/user/:nim/absensi", (req, res) => {
     const nim = req.params.nim;
     console.log("📥 Riwayat absensi untuk NIM:", nim);
     
-    const sql = `
-        SELECT a.*, u.nama as user_nama 
-        FROM absensi a
-        LEFT JOIN users u ON a.nim = u.nim
-        WHERE a.nim = ? 
-        ORDER BY a.tanggal DESC, a.jam DESC 
-        LIMIT 100
-    `;
-    
-    db.query(sql, [nim], (err, results) => {
-        if (err) {
-            console.error("❌ Gagal ambil riwayat absensi:", err);
-            return res.status(500).json({ 
-                success: false, 
-                message: "Gagal ambil riwayat absensi" 
-            });
+    const dummyAbsensi = [
+        {
+            id: 1,
+            nama: "Chelsea Islan",
+            nim: nim,
+            hari: "Senin",
+            tanggal: new Date().toISOString().split('T')[0],
+            jam: "08:30:00",
+            status: "Hadir",
+            user_nama: "Chelsea Islan"
         }
-        
-        // Get user info
-        const userSql = `SELECT nama, nim FROM users WHERE nim = ?`;
-        db.query(userSql, [nim], (userErr, userResults) => {
-            if (userErr || userResults.length === 0) {
-                return res.json({ 
-                    success: true, 
-                    data: {
-                        absensi: results,
-                        userInfo: { nama: "User tidak ditemukan", nim: nim }
-                    }
-                });
-            }
-            
-            res.json({ 
-                success: true, 
-                data: {
-                    absensi: results,
-                    userInfo: userResults[0]
-                }
-            });
-        });
+    ];
+    
+    res.json({ 
+        success: true, 
+        data: {
+            absensi: dummyAbsensi,
+            userInfo: { nama: "User Test", nim: nim }
+        },
+        note: "Data simulasi untuk testing"
     });
 });
 
-// 6. DELETE USER
+// 6. DELETE USER (dummy)
 app.delete("/api/user/:id", (req, res) => {
-    const sql = `DELETE FROM users WHERE id = ?`;
+    console.log(`🗑️ [SIMULASI] User dengan ID ${req.params.id} dihapus`);
     
-    db.query(sql, [req.params.id], (err, result) => {
-        if (err) {
-            console.error("❌ Gagal hapus user:", err);
-            return res.status(500).json({ 
-                success: false, 
-                message: "Gagal hapus user" 
-            });
-        }
-        
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "User tidak ditemukan" 
-            });
-        }
-        
-        res.json({ 
-            success: true, 
-            message: "User berhasil dihapus" 
-        });
+    res.json({ 
+        success: true, 
+        message: "User berhasil dihapus (mode simulasi)" 
     });
 });
 
-// 7. GET STATISTICS
+// 7. GET STATISTICS (dummy)
 app.get("/api/stats", (req, res) => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const queries = {
-        totalUsers: `SELECT COUNT(*) as count FROM users`,
-        totalAbsensi: `SELECT COUNT(*) as count FROM absensi`,
-        todayAbsensi: `SELECT COUNT(*) as count FROM absensi WHERE tanggal = ?`,
-        recentAbsensi: `SELECT * FROM absensi ORDER BY created_at DESC LIMIT 5`
+    const dummyStats = {
+        totalUsers: 5,
+        totalAbsensi: 42,
+        todayAbsensi: 3,
+        recentAbsensi: [
+            { nama: "Chelsea Islan", nim: "20210001", tanggal: "2024-12-11", jam: "08:30:00", status: "Hadir" },
+            { nama: "Iqbaal Ramadhan", nim: "20210002", tanggal: "2024-12-11", jam: "08:45:00", status: "Hadir" },
+            { nama: "Prilly Latuconsina", nim: "20210003", tanggal: "2024-12-10", jam: "09:15:00", status: "Terlambat" }
+        ]
     };
     
-    db.query(queries.totalUsers, (err1, usersResult) => {
-        if (err1) {
-            console.error("❌ Error stats:", err1);
-            return res.status(500).json({ success: false, message: "Error mengambil stats" });
-        }
-        
-        db.query(queries.totalAbsensi, (err2, absensiResult) => {
-            if (err2) {
-                console.error("❌ Error stats:", err2);
-                return res.status(500).json({ success: false, message: "Error mengambil stats" });
-            }
-            
-            db.query(queries.todayAbsensi, [today], (err3, todayResult) => {
-                if (err3) {
-                    console.error("❌ Error stats:", err3);
-                    return res.status(500).json({ success: false, message: "Error mengambil stats" });
-                }
-                
-                db.query(queries.recentAbsensi, (err4, recentResult) => {
-                    if (err4) {
-                        console.error("❌ Error stats:", err4);
-                        return res.status(500).json({ success: false, message: "Error mengambil stats" });
-                    }
-                    
-                    res.json({
-                        success: true,
-                        data: {
-                            totalUsers: usersResult[0].count,
-                            totalAbsensi: absensiResult[0].count,
-                            todayAbsensi: todayResult[0].count,
-                            recentAbsensi: recentResult
-                        }
-                    });
-                });
-            });
-        });
+    res.json({
+        success: true,
+        data: dummyStats,
+        note: "Statistik dummy untuk testing"
     });
 });
 
 // =======================================
-//     🏠 PAGE ROUTES (HTML FILES)
+//     🏠 PAGE ROUTES - YANG HARUS DIPERBAIKI
 // =======================================
+// PERBAIKAN UTAMA: Semua file HTML ada di ROOT, bukan di public/
 
 // 1. LANDING PAGE (Welcome)
 app.get("/", (req, res) => {
     console.log("🌐 Serving: Welcome page");
-    res.sendFile(path.join(__dirname, "public", "welcome.html"));
+    res.sendFile(path.join(__dirname, "welcome.html")); // HAPUS "public"
 });
 
 // 2. FACE SCAN PAGE (Absensi)
 app.get("/scan", (req, res) => {
     console.log("🌐 Serving: Scan page");
-    res.sendFile(path.join(__dirname, "public", "scan.html"));
+    res.sendFile(path.join(__dirname, "scan.html")); // HAPUS "public"
 });
 
 // 3. REGISTER PAGE
 app.get("/register", (req, res) => {
     console.log("🌐 Serving: Register page");
-    res.sendFile(path.join(__dirname, "public", "register.html"));
+    res.sendFile(path.join(__dirname, "register.html")); // HAPUS "public"
 });
 
-// 4. STATUS PAGE
-app.get("/status/:nim", (req, res) => {
-    console.log("🌐 Serving: Status page for NIM:", req.params.nim);
-    res.sendFile(path.join(__dirname, "public", "status.html"));
+// 4. STATUS PAGE - FIXED
+app.get("/status", (req, res) => {
+    console.log("🌐 Serving: Status page");
+    res.sendFile(path.join(__dirname, "status.html")); // HAPUS "public"
 });
 
 // 5. DASHBOARD PAGE
 app.get("/dashboard", (req, res) => {
     console.log("🌐 Serving: Dashboard page");
-    res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+    res.sendFile(path.join(__dirname, "dashboard.html")); // HAPUS "public"
+});
+
+// 6. STATUS WITH PARAM - ALTERNATIVE
+app.get("/status/:nim", (req, res) => {
+    console.log("🌐 Serving: Status page for NIM:", req.params.nim);
+    res.sendFile(path.join(__dirname, "status.html")); // Tetap kirim file HTML yang sama
 });
 
 // =======================================
@@ -372,6 +251,9 @@ app.get("/dashboard", (req, res) => {
 // =======================================
 // Models folder untuk face-api.js
 app.use('/models', express.static(path.join(__dirname, 'models')));
+
+// Static files dari public (CSS, JS, gambar)
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // =======================================
 //     ❌ ERROR HANDLING
@@ -410,20 +292,20 @@ app.use((err, req, res, next) => {
 });
 
 // =======================================
-//     🚀 START SERVER
+//     🚀 START SERVER - YANG HARUS DIPERBAIKI
 // =======================================
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000; // STANDAR PORT UNTUK VERCEL
+app.listen(PORT, "0.0.0.0", () => {   // TAMBAHKAN "0.0.0.0"
     console.log("=".repeat(50));
     console.log("✅ SERVER BERHASIL DIJALANKAN");
     console.log("=".repeat(50));
+    console.log(`🌐 Port: ${PORT}`);
     console.log(`🌐 Homepage:     http://localhost:${PORT}`);
     console.log(`📸 Scan Wajah:   http://localhost:${PORT}/scan`);
     console.log(`👤 Register:     http://localhost:${PORT}/register`);
     console.log(`📊 Dashboard:    http://localhost:${PORT}/dashboard`);
     console.log(`📁 Models:       http://localhost:${PORT}/models/`);
     console.log("=".repeat(50));
-    console.log("🗄️  Database:", db.config.database);
-    console.log("👤 MySQL User:", db.config.user);
+    console.log("⚠️  MODE: DEPLOYMENT TEST (Database dinonaktifkan)");
     console.log("=".repeat(50));
 });
